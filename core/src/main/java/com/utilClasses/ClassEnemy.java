@@ -22,7 +22,9 @@ public class ClassEnemy {
     public enum ShotPattern {
         NONE,
         TARGETED,
-        RADIAL
+        RADIAL,
+        SPREAD,
+        SPIRAL
     }
     public ShotPattern shotPattern;
 
@@ -58,6 +60,16 @@ public class ClassEnemy {
 
     public Rectangle collisionEnemy;
 
+// Spiral shoot stuff
+    private float spiralAngle = 0f;
+    private float spiralAngularSpeed = 90f;
+    private float spiralBulletSpeed = 7f;
+    private float spiralInterval = 0.12f;
+
+    //Spread shoot stuff
+    private int spreadBullets = 5;
+    private float spreadAngle = 10f;
+
     //curve stuff
     public boolean useCurvePath = false;
     private Vector2 curveStart, curveControl,curveEnd;
@@ -76,6 +88,18 @@ public class ClassEnemy {
         this.radialDirections = directions;
         this.radialRounds = rounds;
     }
+
+    public void setSpreadIntensity(int bullets, float angle) {
+        this.spreadBullets = bullets;
+        this.spreadAngle = angle;
+    }
+
+    public void setSpiralIntensity(float angularSpeed, float bulletSpeed, float interval) {
+        this.spiralAngularSpeed = angularSpeed;
+        this.spiralBulletSpeed = bulletSpeed;
+        this.spiralInterval = interval;
+    }
+
 
     public void setShotsRemaining(int shots) {
         this.shotsRemaining = shots;
@@ -220,6 +244,7 @@ public class ClassEnemy {
 
     public void drawEnemyAndShot(ControllerBullets c, float delta, Vector2 playerPosition) {
         updateRadialBurst(delta, c);
+
         if(singleShot) {
             boolean readyToShoot = useCurvePath ? (curveT >= 0.4f) : (currentState == EnemyState.IN_POSITION);
 
@@ -233,6 +258,8 @@ public class ClassEnemy {
                     switch(shotPattern) {
                         case TARGETED -> shootAtPlayer(c, playerPosition);
                         case RADIAL -> shootRadial(c);
+                        case SPREAD -> shootSpread(c, playerPosition);
+                        case SPIRAL -> shootSpiral(c, playerPosition, delta);
                         case NONE -> {}
                     }
                     shotTimer = 0f;
@@ -261,6 +288,8 @@ public class ClassEnemy {
                     switch (shotPattern) {
                         case TARGETED -> shootAtPlayer(c, playerPosition);
                         case RADIAL -> shootRadial(c);
+                        case SPREAD -> shootSpread(c, playerPosition);
+                        case SPIRAL -> shootSpiral(c, playerPosition, delta);
                         case NONE -> {
                         }
                     }
@@ -287,6 +316,18 @@ public class ClassEnemy {
                     shootRadial(c);
                 }
             }
+            case SPREAD -> {
+                if (MathUtils.random() < delta * (1d / attackProbability) * 10f) {
+                    shootSpread(c, playerPosition);
+                }
+            }
+            case SPIRAL -> {
+                shotTimer += delta;
+                if (shotTimer >= spiralInterval) {
+                    shotTimer = 0f;
+                    shootSpiral(c, playerPosition, delta);
+                }
+            }
             case NONE -> {
             }
         }
@@ -296,9 +337,73 @@ public class ClassEnemy {
         Vector2 direction = new Vector2(playerPosition).sub(positionEnemy);
         direction.nor();
 
-        float bulletSpeed = 6f;
+        float bulletSpeed = 7f;
         c.shot(positionEnemy.x, positionEnemy.y, BULLET_SIZE, direction.x * bulletSpeed, direction.y * bulletSpeed);
 
+    }
+
+    private void shootSpread(ControllerBullets c, Vector2 playerPosition) {
+
+        Vector2 direction = new Vector2(playerPosition).sub(positionEnemy);
+        direction.nor();
+
+        float centerAngle = MathUtils.atan2Deg(direction.y, direction.x);
+
+        float totalAngle = spreadAngle * (spreadBullets - 1);
+        float startAngle = centerAngle - totalAngle / 2f;
+        float bulletSpeed = 7f;
+
+        for(int i = 0; i < spreadBullets; i++) {
+            float angle = startAngle + i * spreadAngle;
+            float velX = MathUtils.cosDeg(angle) * bulletSpeed;
+            float velY = MathUtils.sinDeg(angle) * bulletSpeed;
+
+            c.shot(positionEnemy.x, positionEnemy.y, BULLET_SIZE, velX, velY);
+        }
+    }
+
+    private void shootSpiral(ControllerBullets c, Vector2 playerPosition, float delta) {
+
+        // Dirección del enemigo hacia el jugador
+        Vector2 direction = new Vector2(playerPosition).sub(positionEnemy);
+        direction.nor();
+
+        float centerAngle = MathUtils.atan2Deg(direction.y, direction.x);
+
+        // Dos brazos alrededor de la dirección central
+        float angleA = centerAngle + spiralAngle;
+        float angleB = centerAngle - spiralAngle;
+
+        // Brazo A
+        float velXA = MathUtils.cosDeg(angleA) * spiralBulletSpeed;
+        float velYA = MathUtils.sinDeg(angleA) * spiralBulletSpeed;
+
+        c.shot(
+            positionEnemy.x,
+            positionEnemy.y,
+            BULLET_SIZE,
+            velXA,
+            velYA
+        );
+
+        // Brazo B
+        float velXB = MathUtils.cosDeg(angleB) * spiralBulletSpeed;
+        float velYB = MathUtils.sinDeg(angleB) * spiralBulletSpeed;
+
+        c.shot(
+            positionEnemy.x,
+            positionEnemy.y,
+            BULLET_SIZE,
+            velXB,
+            velYB
+        );
+
+        // Los brazos se abren progresivamente
+        spiralAngle += spiralAngularSpeed * delta;
+
+        if (spiralAngle >= 360f) {
+            spiralAngle -= 360f;
+        }
     }
 
     private void shootRadial(ControllerBullets c) {
@@ -308,7 +413,7 @@ public class ClassEnemy {
     }
 
     private void fireRadialRound(ControllerBullets c) {
-        float bulletSpeed = 4f;
+        float bulletSpeed = 6f;
 
         for (int i = 0; i < radialDirections; i++) {
             float angle = (360f / radialDirections) * i;
