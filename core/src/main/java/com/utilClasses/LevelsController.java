@@ -119,6 +119,7 @@ public class LevelsController {
                 enemyLeft.targetHeight = 5.5f + row * 0.55f;
                 enemyLeft.leaveDelay = 3f;
 
+
                 ClassEnemy enemyRight = new ClassEnemy(100, 20, 4, new Vector2(8.8f, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.TARGETED, true);
                 enemyRight.waveRow = row;
                 enemyRight.targetHeight = 5.5f + row * 0.55f;
@@ -143,7 +144,7 @@ public class LevelsController {
                 float leftX = 7.2f - row * 1.5f;
                 float rightX = 8.8f + row * 1.5f;
 
-                ClassEnemy enemyLeft = new ClassEnemy(100, 20, 4, new Vector2(leftX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.TARGETED, false);
+                ClassEnemy enemyLeft = new ClassEnemy(100, 20, 4, new Vector2(leftX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.SPIRAL, false);
                 ClassEnemy enemyRight = new ClassEnemy(100, 20, 4, new Vector2(rightX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.TARGETED, false);
 
                 enemyLeft.waveRow = row;
@@ -155,7 +156,7 @@ public class LevelsController {
                 enemyLeft.targetHeight = 4.5f + row * 0.8f;
                 enemyRight.targetHeight = 4.5f + row * 0.8f;
 
-                enemyLeft.singleShot = true;
+                enemyLeft.singleShot = false;
                 enemyRight.singleShot = true;
 
                 enemyLeft.leaveDelay = 2f;
@@ -163,6 +164,8 @@ public class LevelsController {
 
                 enemyLeft.shotOrder = row * 2;
                 enemyRight.shotOrder = row * 2 + 1;
+
+                enemyLeft.setSpiralIntensity(90f, 7f, 0.12f);
 
                 ce.addEnemy(enemyLeft);
                 ce.addEnemy(enemyRight);
@@ -200,7 +203,6 @@ public class LevelsController {
             sideRight.leaveDelay = 1f;
             sideRight.setShotsRemaining(3);
             sideRight.setRadialIntensity(18, 1);
-
             ce.addEnemy(sideLeft);
             ce.addEnemy(sideRight);
 
