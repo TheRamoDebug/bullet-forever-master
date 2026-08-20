@@ -50,9 +50,6 @@ public class LevelsScreenClass {
 
     private Image level1;
     private Image level2;
-    private Image level3;
-    private Image level4;
-
 
     public void Background(Sprite background,Sprite Thunder, float delta, SpriteBatch c){
         this.delta = delta;
@@ -105,14 +102,10 @@ public class LevelsScreenClass {
                 level1 = new Image(iconlevel1);
                 clickLevel1();
                 level2 = new Image(blackGround);
-                level3 = new Image(blackGround);
-                level4 = new Image(blackGround);
             }
             default -> {
                 level1 = new Image(iconlevel1);
                 level2 = new Image(iconlevel1);
-                level3 = new Image(iconlevel1);
-                level4 = new Image(iconlevel1);
             }
         }
 
@@ -140,29 +133,6 @@ public class LevelsScreenClass {
         });
     }
 
-    private void clickLevel3(){
-        level3.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                expandImage(level3);
-                state = false;
-                screenSelect = new ScreenGameplay(main, 3);
-            }
-        });
-    }
-
-    private void clickLevel4(){
-        level4.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                expandImage(level4);
-                state = false;
-                screenSelect = new ScreenGameplay(main, 4);
-            }
-        });
-    }
-
-
 
     public void organizedImages(Stage stage, Main main) {
         this.main = main;
@@ -172,32 +142,20 @@ public class LevelsScreenClass {
 
         addAnimmation(level1);
         addAnimmation(level2);
-        addAnimmation(level3);
-        addAnimmation(level4);
 
 
         fadeIn(level1);
         fadeIn(level2);
-        fadeIn(level3);
-        fadeIn(level4);
 
-
-        level1.setPosition(260, 280);
-        level2.setPosition(260, 50);
-        level3.setPosition(720, 280);
-        level4.setPosition(720, 50);
-
+        level1.setPosition(280, 200);
+        level2.setPosition(710, 200);
 
         level1.setSize(300,180);
         level2.setSize(300,180);
-        level3.setSize(300,180);
-        level4.setSize(300,180);
+
 
         level1.setOrigin(level1.getWidth() / 2f, level1.getHeight() / 2f);
         level2.setOrigin(level2.getWidth() / 2f, level2.getHeight() / 2f);
-        level3.setOrigin(level3.getWidth() / 2f, level3.getHeight() / 2f);
-        level4.setOrigin(level4.getWidth() / 2f, level4.getHeight() / 2f);
-
 
 
 
@@ -212,9 +170,6 @@ public class LevelsScreenClass {
 
         stage.addActor(level1);
         stage.addActor(level2);
-        stage.addActor(level3);
-        stage.addActor(level4);
-
     }
 
 
@@ -249,9 +204,6 @@ public class LevelsScreenClass {
 
         level1.addAction(Actions.fadeOut(1f, Interpolation.bounce));
         level2.addAction(Actions.fadeOut(1f, Interpolation.bounce));
-        level3.addAction(Actions.fadeOut(1f, Interpolation.bounce));
-        level4.addAction(Actions.fadeOut(1f, Interpolation.bounce));
-
 
 
         image.clearActions();
@@ -285,8 +237,6 @@ public class LevelsScreenClass {
             screenSelect = new ScreenMenu(game);
             level1.addAction(Actions.fadeOut(1f, Interpolation.bounce));
             level2.addAction(Actions.fadeOut(1f, Interpolation.bounce));
-            level3.addAction(Actions.fadeOut(1f, Interpolation.bounce));
-            level4.addAction(Actions.fadeOut(1f, Interpolation.bounce));
         }
 
         if(state) {

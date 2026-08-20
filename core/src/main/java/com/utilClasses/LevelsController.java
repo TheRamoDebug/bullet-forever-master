@@ -11,10 +11,12 @@ public class LevelsController {
     private boolean waveCreated = false;
     private int wavePhase = 0;
     private float waveTimer = 0f;
-    private float enemyInfinite = 0;
+    private int enemyInfinite = 0;
     private float contEnemyLevel = 0;
     private float interWaveTimer = 0f;
     private boolean waitingNextWave = false;
+    private boolean specialAttack = false;
+
     private static final float INTER_WAVE_DELAY = 2f;
     private static final float FIRST_WAVE_DELAY = 5f;
 
@@ -24,6 +26,8 @@ public class LevelsController {
     private float movementBackground = 0;
     private float oscillation = 0;
     private float cont = -3f;
+    private int acum = 0;
+    private int typeOfEnemy = 0;
 
 
     public boolean selectLevel(SpriteBatch c, ControllerEnemies ce, ControllerBullets cbEnemy, Texture fondo, Sprite enemySprite, float delta, int level, Vector2 playerPosition){
@@ -77,22 +81,104 @@ public class LevelsController {
         oscillation += delta * 0.5f;
 
         if(cont > 0.2 && enemyInfinite != contEnemyLevel) {
-
-            cont = 0;
-            oscillation += 1.5f;
+            Vector2 curveStart = new Vector2(17f, 5f);
+            Vector2 curveControl = new Vector2(3f, 3f);
+            Vector2 curveEnd = new Vector2(9f, 10f);
 
             float x = MathUtils.random(1f, WORLD_WIDTH - 2f);
             float y = WORLD_HEIGHT + 1f;
 
-            ClassEnemy auxiliarEnemy = new ClassEnemy(100, 20, 4, new Vector2(x, y), 1.5f, oscillation, 1, 1, ClassEnemy.ShotPattern.TARGETED, false);
+            oscillation += 1.5f;
 
-            auxiliarEnemy.targetHeight = 5f;
-            ce.addEnemy(auxiliarEnemy);
+
+
+            acum += 1;
+
+            if(typeOfEnemy == 0) {
+                ClassEnemy curveEnemy = new ClassEnemy(100, 20, 4, new Vector2(17f, 3f), 2, oscillation, 1, 1, ClassEnemy.ShotPattern.TARGETED, false);
+                curveEnemy.entryDelay = acum * 0.2f;
+                curveEnemy.singleShot = true;
+                curveEnemy.shotOrder = 0;
+                curveEnemy.curvePasses = 3;
+                curveEnemy.setCurvePath(curveStart, curveControl, curveEnd);
+                ce.addEnemy(curveEnemy);
+            }
+
+            if(typeOfEnemy == 1){
+                for (int row = 0; row < 2; row++) {
+                    float targetH = 4f + row * 1.5f;
+                    float leftX = 3f + row * 1.5f;
+                    float rightX = 13f - row * 1.5f;
+
+                    ClassEnemy leftEnemy = new ClassEnemy(100, 20, 4, new Vector2(leftX, WORLD_HEIGHT + 1f), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.RADIAL, false);
+                    leftEnemy.entryDelay = row * 0.3f;
+                    leftEnemy.targetHeight = targetH;
+                    leftEnemy.singleShot = true;
+                    leftEnemy.shotOrder = row;
+                    leftEnemy.leaveDelay = 1f;
+                    leftEnemy.setRadialIntensity(8, 2);
+                    leftEnemy.setShotsRemaining(3);
+                    ce.addEnemy(leftEnemy);
+
+                    ClassEnemy rightEnemy = new ClassEnemy(100, 20, 4, new Vector2(rightX, WORLD_HEIGHT + 1f), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.RADIAL, false);
+                    rightEnemy.entryDelay = row * 0.3f;
+                    rightEnemy.targetHeight = targetH;
+                    rightEnemy.singleShot = true;
+                    rightEnemy.shotOrder = row;
+                    rightEnemy.leaveDelay = 1f;
+                    rightEnemy.setRadialIntensity(8, 2);
+                    rightEnemy.setShotsRemaining(3);
+                    ce.addEnemy(rightEnemy);
+                }
+            }
+
+            if(typeOfEnemy == 2) {
+                ClassEnemy auxiliarEnemy = new ClassEnemy(100, 20, 4, new Vector2(x, y), 1.5f, oscillation, 1, 1, ClassEnemy.ShotPattern.TARGETED, false);
+                auxiliarEnemy.targetHeight = 5f;
+                ce.addEnemy(auxiliarEnemy);
+            }
+
+
+
+            if(specialAttack){
+                float startY = WORLD_HEIGHT + 1f;
+                for (int i = 0; i < 15; i++) {
+                    x = -3f + i * 1.0f;
+                    ClassEnemy zigzagEnemy = new ClassEnemy(100, 20, 4, new Vector2(x, startY), 2, oscillation + i * 0.6f, 1, 1, ClassEnemy.ShotPattern.TARGETED, false);
+                    zigzagEnemy.entryDelay = i * 0.1f;
+                    zigzagEnemy.targetHeight = 7.2f;
+                    zigzagEnemy.singleShot = true;
+                    zigzagEnemy.shotOrder = i;
+                    zigzagEnemy.useSimpleZigZag = true;
+                    ce.addEnemy(zigzagEnemy);
+                }
+                specialAttack = false;
+            }
+
+
             contEnemyLevel += 1;
         }
+
+
+
+
+
+
+
+
+
+
+
         if(ce.getEnemiesCount() == 0 && cont > 1f) {
-            enemyInfinite += 3;
+            enemyInfinite += 2;
             contEnemyLevel = 0;
+            cont = 0;
+            typeOfEnemy = MathUtils.random(0, 3);
+
+            int random = MathUtils.random(1, 5);
+            if(random == 5){
+                specialAttack = true;
+            }
         }
 
         ce.movementEnemies(delta,oscillation, c, enemySprite,cbEnemy, playerPosition);
