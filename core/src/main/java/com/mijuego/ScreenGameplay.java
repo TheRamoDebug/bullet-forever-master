@@ -213,7 +213,7 @@ public class ScreenGameplay implements Screen {
 
         game.batch.draw(newPlane, movementPlayer.x, movementPlayer.y, 0.6f, 0.6f);
 
-        colisionPlayer.set(movementPlayer.x + 0.3f, movementPlayer.y + 0.3f, 0.07f);
+        colisionPlayer.set(movementPlayer.x + 0.3f, movementPlayer.y + 0.3f, 0.06f);
 
 
         if (Player.isAlive()) {
