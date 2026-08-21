@@ -17,6 +17,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.*;
 import io.github.com.mygdx.game.Main;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.MathUtils;
 import com.utilClasses.*;
 
 
@@ -26,7 +28,6 @@ public class ScreenGameplay implements Screen {
     private static final float WORLD_WIDTH = 16f;
     private static final float WORLD_HEIGHT = 9f;
 
-
     private OrthographicCamera cameraFirst;
     private OrthographicCamera cameraSecond;
     private OrthographicCamera cameraThird;
@@ -34,7 +35,6 @@ public class ScreenGameplay implements Screen {
     private Viewport viewportFirst;
     private Viewport viewportSecond;
     private Viewport viewportThird;
-
 
     private Sprite plane;
     private Sprite enemySprite;
@@ -46,14 +46,11 @@ public class ScreenGameplay implements Screen {
 
     private TextureRegion newPlane;
 
-
     private ControllerBullets bulletsPlayer;
     private ControllerBullets bulletsEnemy;
     private ControllerEnemies controllerMoreEnemies;
 
-
     private Circle colisionPlayer;
-
 
     private LevelsController controllerLevelsNew;
     private GameOverOverlay gameOverOverlay;
@@ -62,7 +59,6 @@ public class ScreenGameplay implements Screen {
 
     private PausaClass pausaClass;
     private PlayerAnimation playerAnimation;
-
 
     private float superCont = 1;
     private float deltaFinal;
@@ -74,6 +70,8 @@ public class ScreenGameplay implements Screen {
     private boolean stop = false;
     private boolean state = true;
 
+    private Boss boss;
+    private BitmapFont bossTimerFont;
 
     public ScreenGameplay(Main game){
         this.game = game;
@@ -113,13 +111,9 @@ public class ScreenGameplay implements Screen {
 
         // PLAYER START POSITION
         movementPlayer = new Vector2(WORLD_WIDTH / 2f - 0.2f, 0.5f);
-
         playerAnimation = new PlayerAnimation();
-
         colisionPlayer = new Circle();
-
         newController = new Controls();
-
 
         enemyTexture = new Texture("Sprites/Enemy1.png");
         bullet = new Texture("Sprites/disparoNew.png");
@@ -137,12 +131,14 @@ public class ScreenGameplay implements Screen {
 
         bulletsPlayer = new ControllerBullets();
         bulletsEnemy = new ControllerBullets();
-
         controllerMoreEnemies = new ControllerEnemies();
-
-
         statsClass = new StatsClass(viewportSecond, game.batch, level);
 
+        // bosu
+        boss = new Boss(WORLD_WIDTH / 2f, WORLD_HEIGHT - 1.5f, 1000f);
+        bossTimerFont = new BitmapFont();
+        bossTimerFont.getData().setScale(0.05f);
+        bossTimerFont.setColor(Color.WHITE);
         Gdx.input.setInputProcessor(null);
     }
 
@@ -194,26 +190,22 @@ public class ScreenGameplay implements Screen {
 
 
         //functions for draw bullets and collides
-        bulletsPlayer.drawBulletsAndCollide(
-            game.batch,
-            bullet,
-            controllerMoreEnemies,
-            statsClass
+        bulletsPlayer.drawBulletsAndCollide(game.batch, bullet, controllerMoreEnemies, statsClass
         );
 
-        bulletsEnemy.drawBulletsEnemies(
-            game.batch,
-            bullet,
-            colisionPlayer
+        bulletsPlayer.drawBulletsAndCollideBoss(game.batch, bullet, boss);
+
+        bulletsEnemy.drawBulletsEnemies(game.batch, bullet, colisionPlayer
         );
 
+        boss.update(deltaFinal, bulletsEnemy, movementPlayer);
 
         //functions for player
         newPlane = playerAnimation.update(deltaFinal);
 
         game.batch.draw(newPlane, movementPlayer.x, movementPlayer.y, 0.6f, 0.6f);
 
-        colisionPlayer.set(movementPlayer.x + 0.3f, movementPlayer.y + 0.3f, 0.06f);
+        colisionPlayer.set(movementPlayer.x + 0.3f, movementPlayer.y + 0.3f, 0.05f);
 
 
         if (Player.isAlive()) {
@@ -247,27 +239,75 @@ public class ScreenGameplay implements Screen {
 
         game.batch.end();
 
+        game.shapeRenderer.setProjectionMatrix(cameraFirst.combined);
 
-        if (!Player.isAlive()) {
+        game.shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-            Gdx.input.setInputProcessor(
-                gameOverOverlay.getStage()
-            );
+        game.shapeRenderer.setColor(Color.RED);
 
-            gameOverOverlay.render(delta);
-            gameOverOverlay.shapeRenderer(
-                game.shapeRenderer,
-                delta
-            );
-        }
+        game.shapeRenderer.circle(
+            boss.getX(),
+            boss.getY(),
+            0.6f
+        );
 
+        float barWidth = 10f;
+        float barHeight = 0.08f;
+        float barX = (WORLD_WIDTH - barWidth) / 2f;
+        float barY = WORLD_HEIGHT - 0.35f;
 
-        viewportSecond.apply();
-        game.batch.setProjectionMatrix(cameraSecond.combined);
+        game.shapeRenderer.setColor(Color.DARK_GRAY);
 
+        game.shapeRenderer.rect(
+            barX,
+            barY,
+            barWidth,
+            barHeight
+        );
+
+        game.shapeRenderer.setColor(Color.RED);
+
+        game.shapeRenderer.rect(
+            barX,
+            barY,
+            barWidth * boss.getHealthPercentage(),
+            barHeight
+        );
+
+        game.shapeRenderer.end();
+
+        float timeRemaining = Math.max(
+            0f,
+            boss.getPhaseDuration() - boss.getPhaseTimer()
+        );
+
+        int secondsRemaining = MathUtils.ceil(timeRemaining);
+
+        game.batch.setProjectionMatrix(cameraFirst.combined);
 
         game.batch.begin();
 
+        bossTimerFont.draw(
+            game.batch,
+            String.valueOf(secondsRemaining),
+            barX + barWidth + 0.2f,
+            barY + 0.12f
+        );
+
+        game.batch.end();
+
+
+        if (!Player.isAlive()) {
+
+            Gdx.input.setInputProcessor(gameOverOverlay.getStage());
+
+            gameOverOverlay.render(delta);
+            gameOverOverlay.shapeRenderer(game.shapeRenderer, delta);
+        }
+
+        viewportSecond.apply();
+        game.batch.setProjectionMatrix(cameraSecond.combined);
+        game.batch.begin();
         game.batch.draw(
             backTexture,
             0,
@@ -275,12 +315,9 @@ public class ScreenGameplay implements Screen {
             viewportSecond.getWorldWidth(),
             viewportSecond.getWorldHeight()
         );
-
         game.batch.end();
 
-
         statsClass.render(delta);
-
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(
@@ -434,6 +471,10 @@ public class ScreenGameplay implements Screen {
 
     @Override
     public void dispose() {
+
+        if (bossTimerFont != null) {
+            bossTimerFont.dispose();
+        }
 
         if (plane != null && plane.getTexture() != null) {
             plane.getTexture().dispose();

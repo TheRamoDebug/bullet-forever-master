@@ -364,62 +364,24 @@ public class ClassEnemy {
     }
 
     private void shootAtPlayer(ControllerBullets c, Vector2 playerPosition) {
-        Vector2 direction = new Vector2(playerPosition).sub(positionEnemy);
-        direction.nor();
 
-        float bulletSpeed = 7f;
-        c.shot(positionEnemy.x, positionEnemy.y, BULLET_SIZE, direction.x * bulletSpeed, direction.y * bulletSpeed);
-
+        ShotPatterns.targeted(c, positionEnemy, playerPosition, 7f);
     }
 
     private void shootSpread(ControllerBullets c, Vector2 playerPosition) {
 
-        Vector2 direction = new Vector2(playerPosition).sub(positionEnemy);
-        direction.nor();
-
-        float centerAngle = MathUtils.atan2Deg(direction.y, direction.x);
-
-        float totalAngle = spreadAngle * (spreadBullets - 1);
-        float startAngle = centerAngle - totalAngle / 2f;
-        float bulletSpeed = 7f;
-
-        for(int i = 0; i < spreadBullets; i++) {
-            float angle = startAngle + i * spreadAngle;
-            float velX = MathUtils.cosDeg(angle) * bulletSpeed;
-            float velY = MathUtils.sinDeg(angle) * bulletSpeed;
-
-            c.shot(positionEnemy.x, positionEnemy.y, BULLET_SIZE, velX, velY);
-        }
+        ShotPatterns.spread(c, positionEnemy, playerPosition, spreadBullets, spreadAngle, 7f);
     }
 
     private void shootSpiral(ControllerBullets c) {
 
         float centerX = positionEnemy.x + sizeEnemy / 4f;
+
         float centerY = positionEnemy.y + sizeEnemy / 4f;
 
-        // Brazo A
-        float velXA = MathUtils.cosDeg(spiralAngleA) * spiralBulletSpeed;
-        float velYA = MathUtils.sinDeg(spiralAngleA) * spiralBulletSpeed;
+        Vector2 origin = new Vector2(centerX, centerY);
 
-        c.shot(
-            centerX,
-            centerY,
-            BULLET_SIZE,
-            velXA,
-            velYA
-        );
-
-        // Brazo B
-        float velXB = MathUtils.cosDeg(spiralAngleB) * spiralBulletSpeed;
-        float velYB = MathUtils.sinDeg(spiralAngleB) * spiralBulletSpeed;
-
-        c.shot(
-            centerX,
-            centerY,
-            BULLET_SIZE,
-            velXB,
-            velYB
-        );
+        ShotPatterns.spiral(c, origin, spiralAngleA, spiralAngleB, spiralBulletSpeed);
     }
 
     private void shootRadial(ControllerBullets c) {
@@ -429,15 +391,7 @@ public class ClassEnemy {
     }
 
     private void fireRadialRound(ControllerBullets c) {
-        float bulletSpeed = 6f;
-
-        for (int i = 0; i < radialDirections; i++) {
-            float angle = (360f / radialDirections) * i;
-            float velX = MathUtils.cosDeg(angle) * bulletSpeed;
-            float velY = MathUtils.sinDeg(angle) * bulletSpeed;
-
-            c.shot(positionEnemy.x, positionEnemy.y, BULLET_SIZE, velX, velY);
-        }
+        ShotPatterns.radialRound(c, positionEnemy, radialDirections, 6f);
     }
 
     private void updateRadialBurst(float delta, ControllerBullets c) {
