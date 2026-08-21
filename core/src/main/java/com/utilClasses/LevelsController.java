@@ -230,8 +230,8 @@ public class LevelsController {
                 float leftX = 7.2f - row * 1.5f;
                 float rightX = 8.8f + row * 1.5f;
 
-                ClassEnemy enemyLeft = new ClassEnemy(100, 20, 4, new Vector2(leftX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.SPIRAL, false);
-                ClassEnemy enemyRight = new ClassEnemy(100, 20, 4, new Vector2(rightX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.TARGETED, false);
+                ClassEnemy enemyLeft = new ClassEnemy(100, 12, 4, new Vector2(leftX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.TARGETED, false);
+                ClassEnemy enemyRight = new ClassEnemy(100, 12, 4, new Vector2(rightX, y), 2, oscillation, 0, 1, ClassEnemy.ShotPattern.TARGETED, false);
 
                 enemyLeft.waveRow = row;
                 enemyRight.waveRow = row;
@@ -242,7 +242,7 @@ public class LevelsController {
                 enemyLeft.targetHeight = 4.5f + row * 0.8f;
                 enemyRight.targetHeight = 4.5f + row * 0.8f;
 
-                enemyLeft.singleShot = false;
+                enemyLeft.singleShot = true;
                 enemyRight.singleShot = true;
 
                 enemyLeft.leaveDelay = 2f;
@@ -250,8 +250,6 @@ public class LevelsController {
 
                 enemyLeft.shotOrder = row * 2;
                 enemyRight.shotOrder = row * 2 + 1;
-
-                enemyLeft.setSpiralIntensity(90f, 7f, 0.12f);
 
                 ce.addEnemy(enemyLeft);
                 ce.addEnemy(enemyRight);

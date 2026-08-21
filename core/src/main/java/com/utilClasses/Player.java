@@ -11,7 +11,7 @@ public class Player {
     private static int damage;
 
     public static void defaultStats() {
-        damage = 30;
+        damage = 50;
         health = 6;
     }
 

@@ -24,9 +24,9 @@ public class Controls {
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.K)){
-            velocity = 2f;
+            velocity = 3f;
         }else{
-            velocity = 8f;
+            velocity = 7f;
         }
     }
 
